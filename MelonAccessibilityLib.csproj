@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net472;net35</TargetFrameworks>
+    <AssemblyName>MelonAccessibilityLib</AssemblyName>
+    <RootNamespace>MelonAccessibilityLib</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- NuGet Package Metadata -->
+    <PackageId>MelonAccessibilityLib</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>LordLuceus</Authors>
+    <Description>A reusable library for adding screen reader accessibility to Unity games via MelonLoader mods. Provides UniversalSpeech integration with SAPI fallback, text cleaning, and speech management.</Description>
+    <PackageTags>accessibility;screen-reader;melonloader;unity;tts;speech;blind;visually-impaired</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/LordLuceus/MelonAccessibilityLib</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/LordLuceus/MelonAccessibilityLib</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Include documentation -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <!-- Include README in package -->
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <!-- net35 doesn't support latest language features, so limit it -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net35'">
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+</Project>
