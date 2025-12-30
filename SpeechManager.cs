@@ -167,6 +167,18 @@ namespace MelonAccessibilityLib
             if (FormatTextOverride != null)
                 return FormatTextOverride(speaker, text, textType);
 
+            return BuildSpeakerPrefixedText(speaker, text, textType);
+        }
+
+        /// <summary>
+        /// Builds formatted text with optional speaker prefix based on text type.
+        /// </summary>
+        /// <param name="speaker">The speaker name (can be null or empty)</param>
+        /// <param name="text">The text content</param>
+        /// <param name="textType">The type of text being formatted</param>
+        /// <returns>Formatted text with speaker prefix for Dialogue type, or plain text otherwise</returns>
+        public static string BuildSpeakerPrefixedText(string speaker, string text, int textType)
+        {
             // Default: only Dialogue type gets speaker prefix
             if (textType == TextType.Dialogue && !Net35Extensions.IsNullOrWhiteSpace(speaker))
                 return $"{speaker}: {text}";
