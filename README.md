@@ -20,7 +20,19 @@ A reusable library for adding screen reader accessibility to Unity games via Mel
 
 ## Installation
 
-### Option 1: Project Reference
+### Option 1: NuGet Package (Recommended)
+
+```bash
+dotnet add package MelonAccessibilityLib
+```
+
+Or add to your `.csproj`:
+
+```xml
+<PackageReference Include="MelonAccessibilityLib" Version="1.0.0" />
+```
+
+### Option 2: Project Reference
 
 Add the project to your solution and reference it:
 
@@ -28,7 +40,7 @@ Add the project to your solution and reference it:
 <ProjectReference Include="..\MelonAccessibilityLib\MelonAccessibilityLib.csproj" />
 ```
 
-### Option 2: DLL Reference
+### Option 3: DLL Reference
 
 Build the library and reference the DLL:
 
