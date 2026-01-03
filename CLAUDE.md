@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MelonAccessibilityLib is a C# library that adds screen reader accessibility to Unity games via MelonLoader mods. It provides speech management, text cleaning utilities, and P/Invoke wrappers for UniversalSpeech with SAPI fallback.
+MelonAccessibilityLib is a C# library that adds screen reader accessibility to Unity games via MelonLoader mods. It provides speech and braille output, text cleaning utilities, and P/Invoke wrappers for UniversalSpeech with SAPI fallback.
 
 ## Build Commands
 
@@ -34,9 +34,9 @@ No test framework is currently configured. If adding tests, use standard `dotnet
 
 ### Component Overview
 
-- **SpeechManager** (`SpeechManager.cs`): High-level static API for speech output with duplicate prevention, repeat functionality, and text formatting
-- **UniversalSpeechWrapper** (`UniversalSpeechWrapper.cs`): Low-level P/Invoke wrapper for UniversalSpeech.dll with SAPI fallback
-- **TextCleaner** (`TextCleaner.cs`): Removes Unity rich text tags and normalizes text for screen reader output
+- **SpeechManager** (`SpeechManager.cs`): High-level static API for speech and braille output with duplicate prevention, repeat functionality, and text formatting
+- **UniversalSpeechWrapper** (`UniversalSpeechWrapper.cs`): Low-level P/Invoke wrapper for UniversalSpeech.dll with SAPI fallback; provides `Speak()` and `DisplayBraille()` methods
+- **TextCleaner** (`TextCleaner.cs`): Removes Unity rich text tags and normalizes text; supports custom string and regex replacements via `AddReplacement()` and `AddRegexReplacement()`
 - **AccessibilityLog/IAccessibilityLogger** (`IAccessibilityLogger.cs`): Logging facade with pluggable logger interface
 - **Net35Extensions** (`Net35Extensions.cs`): Polyfills for .NET 3.5 compatibility (e.g., `IsNullOrWhiteSpace`)
 
@@ -50,8 +50,9 @@ Consumer (MelonMod)
     └─ Calls SpeechManager.Output()
           │
           ├─ Duplicate suppression (time-based)
-          ├─ TextCleaner.Clean() (strips rich text)
-          └─ UniversalSpeechWrapper.Speak() (P/Invoke)
+          ├─ TextCleaner.Clean() (strips rich text, applies custom replacements)
+          ├─ UniversalSpeechWrapper.Speak() (P/Invoke)
+          └─ UniversalSpeechWrapper.DisplayBraille() (if EnableBraille)
 ```
 
 ### Extensibility Points
@@ -60,6 +61,8 @@ Consumer (MelonMod)
 - **Text Formatting**: Set `SpeechManager.FormatTextOverride` delegate
 - **Repeat Logic**: Set `SpeechManager.ShouldStoreForRepeatPredicate` delegate
 - **Custom Text Types**: Use constants starting from `TextType.CustomBase` (100)
+- **Text Cleaning**: Use `TextCleaner.AddReplacement()` and `TextCleaner.AddRegexReplacement()` for custom text transformations
+- **Braille Control**: Set `SpeechManager.EnableBraille` to toggle braille output (default: true)
 
 ## Key Conventions
 

@@ -28,6 +28,15 @@ namespace MelonAccessibilityLib
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern int speechStop();
 
+        [DllImport(
+            DLL_NAME,
+            CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode
+        )]
+        private static extern int brailleDisplay(
+            [MarshalAs(UnmanagedType.LPWStr)] string str
+        );
+
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern int speechSetValue(int what, int value);
 
@@ -101,6 +110,29 @@ namespace MelonAccessibilityLib
             catch (Exception ex)
             {
                 AccessibilityLog.Error($"Speech error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Display the given text on a braille display via the current screen reader.
+        /// </summary>
+        /// <param name="text">The text to display on braille</param>
+        public static void DisplayBraille(string text)
+        {
+            if (!_initialized || !_dllAvailable || Net35Extensions.IsNullOrWhiteSpace(text))
+                return;
+
+            try
+            {
+                brailleDisplay(text);
+            }
+            catch (DllNotFoundException)
+            {
+                _dllAvailable = false;
+            }
+            catch (Exception ex)
+            {
+                AccessibilityLog.Error($"Braille display error: {ex.Message}");
             }
         }
 

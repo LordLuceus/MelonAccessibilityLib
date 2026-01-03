@@ -29,6 +29,13 @@ namespace MelonAccessibilityLib
         public static bool EnableLogging { get; set; } = true;
 
         /// <summary>
+        /// Whether to send output to braille displays. Default is true.
+        /// When enabled, all speech output is also sent to the braille display
+        /// via the screen reader's braille support.
+        /// </summary>
+        public static bool EnableBraille { get; set; } = true;
+
+        /// <summary>
         /// Initialize the speech system.
         /// </summary>
         /// <returns>True if initialization succeeded.</returns>
@@ -74,6 +81,12 @@ namespace MelonAccessibilityLib
             // Output via speech
             UniversalSpeechWrapper.Speak(formattedText);
 
+            // Output via braille if enabled
+            if (EnableBraille)
+            {
+                UniversalSpeechWrapper.DisplayBraille(formattedText);
+            }
+
             if (EnableLogging)
             {
                 string typeName =
@@ -103,6 +116,11 @@ namespace MelonAccessibilityLib
             {
                 string formattedText = FormatText(_currentSpeaker, _currentText, _currentType);
                 UniversalSpeechWrapper.Speak(formattedText);
+
+                if (EnableBraille)
+                {
+                    UniversalSpeechWrapper.DisplayBraille(formattedText);
+                }
 
                 if (EnableLogging)
                 {
