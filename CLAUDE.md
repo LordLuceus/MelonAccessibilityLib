@@ -26,6 +26,30 @@ dotnet pack -c Release
 
 Build outputs are located at `bin/{Debug|Release}/{net6.0|net472|net35}/MelonAccessibilityLib.dll`.
 
+## Publishing a Release
+
+To publish a new version to NuGet:
+
+1. **Bump the version** in `MelonAccessibilityLib.csproj`:
+   ```xml
+   <Version>1.1.0</Version>
+   ```
+
+2. **Commit and tag** the release:
+   ```bash
+   git add MelonAccessibilityLib.csproj
+   git commit -m "chore: Bump version to 1.1.0"
+   git tag v1.1.0
+   ```
+
+3. **Push the tag** to trigger the GitHub Actions workflow:
+   ```bash
+   git push origin master
+   git push origin v1.1.0
+   ```
+
+The `v*` tag push triggers the `.github/workflows/nuget-publish.yml` workflow, which builds and publishes the package to NuGet automatically.
+
 ## Testing
 
 No test framework is currently configured. If adding tests, use standard `dotnet test` commands.
