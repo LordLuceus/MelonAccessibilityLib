@@ -5,8 +5,9 @@ A reusable library for adding screen reader accessibility to Unity games via Mel
 ## Features
 
 - **UniversalSpeech integration** - P/Invoke wrapper for the UniversalSpeech library with SAPI fallback
+- **Braille display support** - Automatic output to braille displays via screen reader
 - **High-level speech manager** - Duplicate prevention, repeat functionality, speaker formatting
-- **Text cleaning** - Strips Unity rich text tags (`<color>`, `<size>`, `<b>`, etc.)
+- **Text cleaning** - Strips Unity rich text tags (`<color>`, `<size>`, `<b>`, etc.) with extensible custom replacements
 - **Logging abstraction** - Integrate with MelonLoader or any logging system
 - **Multi-target support** - Builds for net6.0, net472, and net35 for broad compatibility with various games
 
@@ -123,13 +124,16 @@ SpeechManager.RepeatLast();
 | `Stop()`                          | Stop current speech.                                   |
 | `ClearRepeatBuffer()`             | Clear stored repeat text.                              |
 
-| Property                        | Description                                           |
-| ------------------------------- | ----------------------------------------------------- |
-| `DuplicateWindowSeconds`        | Time window for duplicate suppression (default: 0.5s) |
-| `EnableLogging`                 | Whether to log speech output (default: true)          |
-| `ShouldStoreForRepeatPredicate` | Custom predicate for repeat storage                   |
+| Property                        | Description                                                    |
+| ------------------------------- | -------------------------------------------------------------- |
+| `DuplicateWindowSeconds`        | Time window for duplicate suppression (default: 0.5s)          |
+| `EnableLogging`                 | Whether to log speech output (default: true)                   |
+| `EnableBraille`                 | Whether to output to braille displays (default: true)          |
+| `FormatTextOverride`            | Custom delegate for text formatting (see Extensibility)        |
+| `ShouldStoreForRepeatPredicate` | Custom predicate for repeat storage (see Extensibility)        |
+| `TextTypeNames`                 | Dictionary mapping text type IDs to names for logging          |
 
-### TextType Enum
+### TextType Constants
 
 | Value        | Description                                       |
 | ------------ | ------------------------------------------------- |
@@ -138,6 +142,7 @@ SpeechManager.RepeatLast();
 | `Menu`       | Menu item text                                    |
 | `MenuChoice` | Menu selection                                    |
 | `System`     | System messages                                   |
+| `CustomBase` | Base value (100) for defining custom text types   |
 
 ### UniversalSpeechWrapper
 
@@ -146,11 +151,14 @@ Low-level access to UniversalSpeech:
 ```csharp
 UniversalSpeechWrapper.Initialize();           // Initialize (called by SpeechManager)
 UniversalSpeechWrapper.Speak("text", true);    // Speak with interrupt
+UniversalSpeechWrapper.DisplayBraille("text"); // Output to braille display
 UniversalSpeechWrapper.Stop();                 // Stop speech
 UniversalSpeechWrapper.IsScreenReaderActive(); // Check if screen reader is running
 ```
 
 ### TextCleaner
+
+Basic usage:
 
 ```csharp
 string clean = TextCleaner.Clean("<color=#ff0000>Red text</color>");
@@ -158,6 +166,22 @@ string clean = TextCleaner.Clean("<color=#ff0000>Red text</color>");
 
 string combined = TextCleaner.CombineLines("Line 1", "<b>Line 2</b>", "Line 3");
 // Result: "Line 1 Line 2 Line 3"
+```
+
+Custom text replacements (applied after tag removal):
+
+```csharp
+// Simple string replacement
+TextCleaner.AddReplacement("♥", "heart");
+TextCleaner.AddReplacement("→", "arrow");
+
+// Regex replacement
+TextCleaner.AddRegexReplacement(@"\[(\d+)\]", "footnote $1");
+
+// Clear custom replacements
+TextCleaner.ClearReplacements();      // Clear string replacements only
+TextCleaner.ClearRegexReplacements(); // Clear regex replacements only
+TextCleaner.ClearAllCustomReplacements(); // Clear all
 ```
 
 ### AccessibilityLog
@@ -182,6 +206,63 @@ public class ConsoleLogger : IAccessibilityLogger
 The library includes `Net35Extensions` with polyfills for methods not available in .NET 3.5:
 
 - `Net35Extensions.IsNullOrWhiteSpace(string)` - Use instead of `string.IsNullOrWhiteSpace`
+
+## Extensibility
+
+### Custom Text Types
+
+Define custom text types for game-specific content:
+
+```csharp
+public static class MyTextTypes
+{
+    public const int Tutorial = TextType.CustomBase + 1;  // 101
+    public const int Combat = TextType.CustomBase + 2;    // 102
+    public const int Inventory = TextType.CustomBase + 3; // 103
+}
+
+// Register names for logging
+SpeechManager.TextTypeNames = new Dictionary<int, string>
+{
+    { TextType.Dialogue, "Dialogue" },
+    { TextType.Narrator, "Narrator" },
+    { MyTextTypes.Tutorial, "Tutorial" },
+    { MyTextTypes.Combat, "Combat" },
+};
+
+// Use custom types
+SpeechManager.Announce("Press A to jump", MyTextTypes.Tutorial);
+```
+
+### Custom Text Formatting
+
+Override how text is formatted before output:
+
+```csharp
+SpeechManager.FormatTextOverride = (speaker, text, textType) =>
+{
+    // Custom formatting logic
+    if (textType == MyTextTypes.Combat)
+        return $"Combat: {text}";
+    if (!string.IsNullOrEmpty(speaker))
+        return $"{speaker} says: {text}";
+    return text;
+};
+```
+
+### Custom Repeat Storage
+
+Control which text types are stored for repeat functionality:
+
+```csharp
+SpeechManager.ShouldStoreForRepeatPredicate = (textType) =>
+{
+    // Store dialogue, narrator, and tutorial text for repeat
+    return textType == TextType.Dialogue
+        || textType == TextType.Narrator
+        || textType == MyTextTypes.Tutorial;
+};
+```
 
 ## UniversalSpeech Setup
 
